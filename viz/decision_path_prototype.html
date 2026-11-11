@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TalonQuant Decision Path</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout concept: a research console. Controls on top, price chart + recommendation,
+   then the six-stage decision path with an inspector, attribution bars, risk checks, and a decision log. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --ink:#14202e; --muted:#566678; --line:#d9e0e8; --soft:#e9f0f8;
+  --pos:#1f5fa8; --neg:#b9531a; --ok:#1c7647; --warn:#8f6200; --fail:#b3261e;
+  --font-head:"Space Grotesk",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-data:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e141b; --surface:#151d27; --ink:#e6edf5; --muted:#93a3b5; --line:#263342; --soft:#1b2a3b;
+  --pos:#6aa8e8; --neg:#ee9a5e; --ok:#5cc48e; --warn:#e0b34a; --fail:#f08a82; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e141b; --surface:#151d27; --ink:#e6edf5; --muted:#93a3b5; --line:#263342; --soft:#1b2a3b;
+  --pos:#6aa8e8; --neg:#ee9a5e; --ok:#5cc48e; --warn:#e0b34a; --fail:#f08a82; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--font-head);margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:24px;line-height:1.2}
+h2{font-size:15px}
+.zh{color:var(--muted);font-weight:400}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13px}
+.banner b{font-family:var(--font-data);font-size:12px;letter-spacing:.06em;white-space:nowrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.card>h2{margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,input[type=number],input[type=range]{font:inherit;color:var(--ink)}
+select,input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 8px;width:100%;min-width:0}
+input[type=range]{accent-color:var(--pos);width:100%}
+button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--pos)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.primary{background:var(--pos);border-color:var(--pos);color:var(--surface);font-weight:600}
+:focus-visible{outline:2px solid var(--pos);outline-offset:2px}
+.top{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+.sw{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap;transform:translate(-50%,-120%)}
+.rec .big{font-family:var(--font-head);font-size:28px;font-weight:600;line-height:1.1}
+.rec dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px 0 0}
+.rec dt{color:var(--muted)} .rec dd{margin:0;text-align:right}
+.pill{display:inline-flex;gap:5px;align-items:center;border:1px solid currentColor;border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .fail{color:var(--fail)}
+.band{position:relative;height:10px;background:var(--soft);border-radius:5px;margin:8px 0 2px}
+.band i{position:absolute;top:0;bottom:0;background:var(--pos);opacity:.35;border-radius:5px}
+.band b{position:absolute;top:-3px;width:3px;height:16px;background:var(--pos);border-radius:2px}
+.band s{position:absolute;top:-3px;bottom:-3px;border-left:1px dashed var(--muted)}
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.stage{text-align:left;display:flex;flex-direction:column;gap:2px;padding:10px;position:relative}
+.stage .n{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.stage .t{font-weight:600}
+.stage .z{font-size:12px;color:var(--muted)}
+.stage.lit{border-color:var(--pos)}
+.stage.active{background:var(--soft);border-color:var(--pos)}
+.stage:not(:last-child)::after{content:"›";position:absolute;right:-8px;top:50%;transform:translate(50%,-50%);color:var(--muted);font-size:18px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 4px var(--soft)}}
+.stage.active{animation:pulse 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.stage.active{animation:none}}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+table{border-collapse:collapse;width:100%}
+td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.r,th.r{text-align:right}
+.scroll{overflow-x:auto}
+.why{color:var(--muted);margin:8px 0 0}
+.attr{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.6fr) 56px;gap:6px 10px;align-items:center}
+.attr .lab{min-width:0;font-size:13px}
+.track{position:relative;height:14px;background:linear-gradient(var(--line),var(--line)) center/1px 100% no-repeat}
+.track i{position:absolute;top:2px;height:10px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline}
+.checks .d{grid-column:2/4;color:var(--muted);font-size:12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.controls .seg{flex-wrap:nowrap}
+.controls .seg button{padding-inline:8px;white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--soft);border-color:var(--pos);font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px}
+.row .field{flex:1 1 150px}
+.foot{font-size:12px;color:var(--muted)}
+@media (max-width:820px){.top,.two{grid-template-columns:minmax(0,1fr)}.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}.stage::after{display:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <h1>Decision Path <span class="zh">決策路徑</span></h1>
+  <p class="foot" style="margin:6px 0 0">TalonQuant prototype. See how data becomes a recommendation, one stage at a time. The system recommends; you decide.</p>
+</header>
+<div class="banner" role="note"><b>SYNTHETIC 合成資料</b><span>Prices come from a seeded random walk, not from any market. Model weights are illustrative and were not fitted to data. Nothing here is financial advice 非投資建議.</span></div>
+
+<section class="card" aria-label="Controls">
+  <div class="controls">
+    <div class="field"><label for="scn">Scenario 情境</label><select id="scn"></select></div>
+    <div class="field"><label for="acct">Account size 帳戶規模</label><select id="acct">
+      <option value="5000">$5,000 (individual 個人)</option><option value="25000" selected>$25,000</option>
+      <option value="1000000">$1,000,000 (pro 專業)</option><option value="100000000">$100,000,000 (institution 機構)</option></select></div>
+    <div class="field"><label for="risk">Risk per trade 單筆風險: <span id="riskv" class="num"></span></label><input id="risk" type="range" min="0.25" max="2" step="0.25" value="1"></div>
+    <div class="field"><label for="stopm">Stop distance 停損距離: <span id="stopmv" class="num"></span></label><input id="stopm" type="range" min="1" max="4" step="0.5" value="2"></div>
+    <div class="field"><label for="day">Day 日: <span id="dayv" class="num"></span></label><input id="day" type="range" min="60" max="251" step="1" value="200"></div>
+    <div class="field"><label>&nbsp;</label><div class="seg"><button id="play" type="button">Play days 播放</button><button id="trace" type="button">Trace path 追蹤</button></div></div>
+  </div>
+</section>
+
+<div class="top">
+  <section class="card" aria-label="Price chart">
+    <h2>Price and stop 價格與停損 <span class="zh num" id="asof"></span></h2>
+    <div class="legend"><span><i class="sw" style="color:var(--ink)"></i>Close 收盤價</span><span><i class="sw" style="color:var(--pos);border-top-style:dashed"></i>50-day average 50日均線</span><span><i class="sw" style="color:var(--neg);border-top-style:dashed"></i>Stop 停損</span></div>
+    <div class="chart" id="chart"></div>
+    <p class="foot" style="margin:6px 0 0">Only data up to the selected day is drawn. Hover to read a price, click to jump to a day.</p>
+  </section>
+  <section class="card rec" aria-label="Recommendation" id="rec"></section>
+</div>
+
+<section aria-label="Decision path">
+  <h2 style="margin-bottom:8px">Decision path 決策路徑 <span class="zh">Select a stage to inspect it</span></h2>
+  <div class="pipe" id="pipe"></div>
+</section>
+
+<section class="card" aria-live="polite" id="inspect"></section>
+
+<div class="two">
+  <section class="card" id="attr" aria-label="Model attribution"></section>
+  <section class="card" id="checks" aria-label="Risk checks"></section>
+</div>
+
+<section class="card" id="decide" aria-label="Your decision"></section>
+<section class="card" id="log" aria-label="Decision record"></section>
+
+<p class="foot">Method notes: indicators use only data up to the selected day (no look-ahead 前視偏誤). Contributions are exact for this linear score and are labeled model attribution 模型歸因, not causation. Uncertainty bands are illustrative, not statistically calibrated. Costs and slippage 滑價 are not modeled in this prototype.</p>
+</main>
+<script>
+/* LOGIC:START */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){var u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function makeSeries(seed,segments,start){
+  var r=mulberry32(seed),p=[start];
+  segments.forEach(function(sg){for(var i=0;i<sg[0];i++){p.push(p[p.length-1]*Math.exp(sg[1]+sg[2]*gauss(r)));}});
+  return p.slice(0,252);
+}
+function mean(a){return a.reduce(function(s,x){return s+x;},0)/a.length;}
+function sd(a){var m=mean(a);return Math.sqrt(a.reduce(function(s,x){return s+(x-m)*(x-m);},0)/(a.length-1));}
+function clip(x,l,h){return Math.max(l,Math.min(h,x));}
+function logistic(x){return 1/(1+Math.exp(-x));}
+var FEATURES=[
+  {key:'mom',name:'Momentum 60d',zh:'60日動能',w:0.9},
+  {key:'trend',name:'Price vs 50d average',zh:'相對50日均線',w:0.7},
+  {key:'rsi',name:'RSI 14 (overbought penalty)',zh:'相對強弱指標',w:-0.3},
+  {key:'vol',name:'Volatility 20d',zh:'20日波動率',w:-0.5},
+  {key:'dd',name:'Drawdown from 120d high',zh:'距120日高點回撤',w:0.4}
+];
+/* analyze() slices the series at day t, so nothing after t can influence the result. */
+function analyze(prices,t,P){
+  var px=prices.slice(0,t+1),price=px[t],lr=[],i;
+  for(i=1;i<=t;i++)lr.push(Math.log(px[i]/px[i-1]));
+  var l20=lr.slice(-20),dsig=sd(l20),annVol=dsig*Math.sqrt(252);
+  var mom=Math.log(price/px[t-60]);
+  var sma50=mean(px.slice(-50)),trend=price/sma50-1;
+  var l14=lr.slice(-14),g=0,l=0;l14.forEach(function(x){if(x>0)g+=x;else l-=x;});
+  var rsi=(g+l)===0?50:100*g/(g+l);
+  var hi=Math.max.apply(null,px.slice(-120)),dd=price/hi-1;
+  var raw={mom:mom,trend:trend,rsi:rsi,vol:annVol,dd:dd};
+  var zs={mom:clip(mom/0.20,-3,3),trend:clip(trend/0.08,-3,3),rsi:clip((rsi-50)/20,-3,3),vol:clip((annVol-0.25)/0.15,-3,3),dd:clip(dd/0.10,-3,3)};
+  var feats=FEATURES.map(function(f){return {key:f.key,name:f.name,zh:f.zh,w:f.w,raw:raw[f.key],z:zs[f.key],contrib:f.w*zs[f.key]};});
+  var score=feats.reduce(function(s,f){return s+f.contrib;},0);
+  var prob=logistic(score),spread=0.35+0.25*Math.max(0,zs.vol);
+  var band=[logistic(score-spread),logistic(score+spread)];
+  var action=prob>=0.60?'BUY':(prob<=0.40?'AVOID':'WAIT');
+  /* risk checks */
+  var checks=[];
+  checks.push({key:'vol',name:'Volatility cap',zh:'波動率上限',value:annVol,text:(annVol*100).toFixed(1)+'% vs warn 45% / block 60%',status:annVol>0.60?'fail':(annVol>0.45?'warn':'ok')});
+  checks.push({key:'dd',name:'Drawdown limit',zh:'回撤限制',value:dd,text:(dd*100).toFixed(1)+'% vs warn -20% / block -35%',status:dd<-0.35?'fail':(dd<-0.20?'warn':'ok')});
+  /* sizing */
+  var stopDist=P.stopMult*dsig*Math.sqrt(5)*price,stop=price-stopDist;
+  var riskDollars=P.equity*P.riskPct/100;
+  var sharesRisk=Math.max(0,Math.floor(riskDollars/stopDist));
+  var sharesConc=Math.max(0,Math.floor(P.equity*(P.maxPosPct/100)/price));
+  var sharesLiq=Math.max(0,Math.floor(P.adv*(P.liqPct/100)/price));
+  var shares=Math.min(sharesRisk,sharesConc,sharesLiq);
+  var binding=shares===sharesRisk?'risk budget':(shares===sharesConc?'concentration cap':'liquidity cap');
+  if(sharesRisk>sharesConc&&sharesConc<=sharesLiq)binding='concentration cap';
+  else if(sharesRisk>sharesLiq&&sharesLiq<sharesConc)binding='liquidity cap';
+  else if(sharesRisk<=Math.min(sharesConc,sharesLiq))binding='risk budget';
+  checks.push({key:'conc',name:'Concentration',zh:'持股集中度',value:sharesRisk*price/P.equity,text:'Risk-based position would be '+(sharesRisk*price/P.equity*100).toFixed(1)+'% of equity; cap '+P.maxPosPct+'%',status:sharesRisk>sharesConc?'warn':'ok'});
+  checks.push({key:'liq',name:'Liquidity',zh:'流動性',value:sharesRisk*price/P.adv,text:'Order is '+(sharesRisk*price/P.adv*100).toFixed(2)+'% of synthetic daily volume; cap '+P.liqPct+'%',status:sharesRisk>sharesLiq?'warn':'ok'});
+  var blocked=checks.some(function(c){return c.status==='fail';});
+  var rec;
+  if(action==='BUY'&&!blocked)rec={label:'BUY',zh:'買進',shares:shares};
+  else if(action==='BUY'&&blocked)rec={label:'NO TRADE',zh:'不交易（風控攔截）',shares:0};
+  else if(action==='AVOID')rec={label:'AVOID',zh:'避開',shares:0};
+  else rec={label:'WAIT',zh:'觀望',shares:0};
+  rec.notional=rec.shares*price;
+  return {t:t,price:price,dsig:dsig,annVol:annVol,sma50:sma50,raw:raw,feats:feats,score:score,prob:prob,band:band,action:action,checks:checks,blocked:blocked,
+    sizing:{stopDist:stopDist,stop:stop,riskDollars:riskDollars,sharesRisk:sharesRisk,sharesConc:sharesConc,sharesLiq:sharesLiq,shares:shares,binding:binding},rec:rec};
+}
+var SCENARIOS=[
+  {id:'trend',name:'Steady uptrend',zh:'穩定上升趨勢',seed:11,segs:[[251,0.0011,0.0105]],adv:40e6},
+  {id:'chop',name:'Choppy, mixed signals',zh:'震盪、訊號互相矛盾',seed:29,segs:[[120,0.0012,0.013],[131,-0.0007,0.016]],adv:25e6},
+  {id:'shock',name:'High-volatility selloff',zh:'高波動下跌',seed:7,segs:[[140,0.0006,0.012],[111,-0.0032,0.027]],adv:15e6}
+];
+/* LOGIC:END */
+
+/* ---------- UI ---------- */
+var S={scn:0,equity:25000,riskPct:1,stopMult:2,day:200,stage:5,log:[],dec:null,tried:{},series:[],timer:null,pauseT:null,traceT:null};
+var STAGES=[
+  {id:'data',t:'Data',z:'資料'},{id:'feat',t:'Features',z:'特徵'},{id:'sig',t:'Signal',z:'訊號'},
+  {id:'risk',t:'Risk checks',z:'風險檢查'},{id:'size',t:'Position size',z:'部位規模'},{id:'rec',t:'Recommendation',z:'建議'}];
+function $(id){return document.getElementById(id);}
+function money(x){return '$'+Math.round(x).toLocaleString('en-US');}
+function pct(x,d){return (x*100).toFixed(d==null?1:d)+'%';}
+function sgn(x,d){return (x>=0?'+':'−')+Math.abs(x).toFixed(d==null?2:d);}
+function params(){var sc=SCENARIOS[S.scn];return {equity:S.equity,riskPct:S.riskPct,stopMult:S.stopMult,adv:sc.adv,maxPosPct:20,liqPct:1};}
+function load(){var sc=SCENARIOS[S.scn];S.series=makeSeries(sc.seed,sc.segs,100);}
+function statusBadge(s){var m={ok:['✓','Pass 通過'],warn:['!','Caution 注意'],fail:['✕','Blocked 攔截']}[s];return '<span class="pill '+s+'"><span aria-hidden="true">'+m[0]+'</span>'+m[1]+'</span>';}
+
+function renderChart(a){
+  var W=720,H=250,m={l:46,r:84,t:12,b:26},s=S.series,n=s.length,t=S.day;
+  var lo=Math.min.apply(null,s),hi=Math.max.apply(null,s),pad=(hi-lo)*0.06;lo-=pad;hi+=pad;
+  function X(i){return m.l+i/(n-1)*(W-m.l-m.r);}
+  function Y(v){return m.t+(hi-v)/(hi-lo)*(H-m.t-m.b);}
+  var g='',i,ticks=4;
+  for(i=0;i<=ticks;i++){var v=lo+(hi-lo)*i/ticks;g+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(m.l-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--font-data)">'+v.toFixed(0)+'</text>';}
+  for(i=0;i<n;i+=50){g+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--font-data)">d'+i+'</text>';}
+  var d='',d2='';
+  for(i=0;i<=t;i++)d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(s[i]).toFixed(1);
+  var first=true;for(i=49;i<=t;i++){var mm=mean(s.slice(i-49,i+1));d2+=(first?'M':'L')+X(i).toFixed(1)+' '+Y(mm).toFixed(1);first=false;}
+  var yE=Y(a.price),yS=Y(a.sizing.stop),yL=Math.max(yS,yE+13);
+  g+='<path d="'+d2+'" fill="none" stroke="var(--pos)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  g+='<path d="'+d+'" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>';
+  g+='<line x1="'+X(t)+'" x2="'+(W-m.r)+'" y1="'+yS+'" y2="'+yS+'" stroke="var(--neg)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  g+='<circle cx="'+X(t)+'" cy="'+yE+'" r="4.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>';
+  g+='<text x="'+(W-m.r+6)+'" y="'+(yE-4)+'" font-size="11" fill="var(--ink)" font-family="var(--font-data)">'+a.price.toFixed(2)+'</text>';
+  g+='<text x="'+(W-m.r+6)+'" y="'+(yL+4)+'" font-size="11" fill="var(--neg)" font-family="var(--font-data)">stop '+a.sizing.stop.toFixed(2)+'</text>';
+  g+='<line id="xh" x1="0" x2="0" y1="'+m.t+'" y2="'+(H-m.b)+'" stroke="var(--muted)" stroke-width="1" visibility="hidden"/><circle id="xd" r="4" cx="0" cy="0" fill="var(--ink)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>';
+  $('chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Synthetic price series with 50-day average and stop level, drawn up to day '+t+'">'+g+'</svg><div class="tip" id="tip" hidden></div>';
+  $('chart')._geo={W:W,H:H,m:m,n:n,X:X,Y:Y};
+}
+function renderRec(a){
+  var r=a.rec,cls=r.label==='BUY'?'ok':(r.label==='NO TRADE'?'fail':'warn');
+  var lo=a.band[0],hi=a.band[1];
+  $('rec').innerHTML='<h2>Recommendation 建議 <span class="zh">day '+a.t+'</span></h2>'+
+    '<div class="big">'+r.label+' <span class="zh" style="font-size:15px;font-family:var(--font-body)">'+r.zh+'</span></div>'+
+    '<p class="why" style="margin-top:6px">'+(r.label==='BUY'?'Buy '+r.shares.toLocaleString('en-US')+' shares for about '+money(r.notional)+', with a stop at '+a.sizing.stop.toFixed(2)+'.':(r.label==='NO TRADE'?'The signal says buy, but a risk check blocked it.':(r.label==='AVOID'?'Signal probability is at or below 40%.':'Signal probability is between 40% and 60%.')))+'</p>'+
+    '<dl><dt>Signal probability 訊號機率</dt><dd class="num">'+pct(a.prob,0)+'</dd>'+
+    '<dt>Illustrative range 示意區間</dt><dd class="num">'+pct(lo,0)+' to '+pct(hi,0)+'</dd></dl>'+
+    '<div class="band" aria-hidden="true"><s style="left:40%"></s><s style="left:60%"></s><i style="left:'+lo*100+'%;width:'+(hi-lo)*100+'%"></i><b style="left:calc('+a.prob*100+'% - 1px)"></b></div>'+
+    '<div class="foot" style="display:flex;justify-content:space-between"><span>0%</span><span>dashed: 40% / 60% rule thresholds</span><span>100%</span></div>'+
+    '<p class="foot" style="margin:10px 0 0"><span class="pill '+cls+'">Rule: BUY at ≥ 60%, AVOID at ≤ 40%</span></p>';
+}
+function renderPipe(){
+  $('pipe').innerHTML=STAGES.map(function(s,i){
+    return '<button type="button" class="card stage'+(i<=S.stage?' lit':'')+(i===S.stage?' active':'')+'" data-i="'+i+'" aria-pressed="'+(i===S.stage)+'"><span class="n">STAGE '+(i+1)+'</span><span class="t">'+s.t+'</span><span class="z">'+s.z+'</span></button>';}).join('');
+}
+function kv(rows){return '<div class="scroll"><table><tbody>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="r num">'+r[1]+'</td></tr>';}).join('')+'</tbody></table></div>';}
+function renderInspect(a){
+  var s=STAGES[S.stage],sc=SCENARIOS[S.scn],body='',why='';
+  if(S.stage===0){body=kv([['Scenario 情境',sc.name],['Source 來源','seeded random walk (seed '+sc.seed+')'],['As-of day 截至',a.t+' of '+(S.series.length-1)],['Last close 收盤價',a.price.toFixed(2)],['Last daily return 單日報酬',pct(S.series[a.t]/S.series[a.t-1]-1,2)],['Rows used 使用筆數',(a.t+1)+' (nothing after the as-of day)']]);why='Every later stage sees only these rows. That is how the prototype avoids look-ahead bias 前視偏誤.';}
+  if(S.stage===1){body='<div class="scroll"><table><thead><tr><th>Feature 特徵</th><th class="r">Raw 原始值</th><th class="r">z-score 標準化</th></tr></thead><tbody>'+a.feats.map(function(f){var raw=f.key==='rsi'?f.raw.toFixed(1):pct(f.raw,1);return '<tr><td>'+f.name+' <span class="zh">'+f.zh+'</span></td><td class="r num">'+raw+'</td><td class="r num">'+sgn(f.z)+'</td></tr>';}).join('')+'</tbody></table></div>';why='Each raw value is divided by a fixed scale and clipped to ±3, so features share one unit. Scales are illustrative.';}
+  if(S.stage===2){body=kv([['Score 分數 (sum of weight × z)',sgn(a.score)],['Probability 機率 = logistic(score)',pct(a.prob,1)],['Illustrative range 示意區間',pct(a.band[0],0)+' to '+pct(a.band[1],0)],['Rule 規則','BUY ≥ 60%, AVOID ≤ 40%, else WAIT'],['Signal 訊號',a.action]]);why='The band widens when volatility is high. It is a display aid, not a calibrated confidence interval.';}
+  if(S.stage===3){body=kv(a.checks.map(function(c){return [c.name+' <span class="zh">'+c.zh+'</span>',statusBadge(c.status)];}));why='A "Blocked" result turns a BUY into NO TRADE. A "Caution" result keeps the signal but caps the size.';}
+  if(S.stage===4){var z=a.sizing;body=kv([['Account equity 帳戶淨值',money(S.equity)],['Risk budget 風險預算 ('+S.riskPct+'%)',money(z.riskDollars)],['Stop distance 停損距離',z.stopDist.toFixed(2)+' ('+S.stopMult+' × daily σ × √5)'],['Shares by risk 依風險',z.sharesRisk.toLocaleString('en-US')],['Shares by concentration cap (20%)',z.sharesConc.toLocaleString('en-US')],['Shares by liquidity cap (1% of volume)',z.sharesLiq.toLocaleString('en-US')],['Final shares 最終股數',z.shares.toLocaleString('en-US')+' ('+z.binding+' binds)']]);why='Position size is the smallest of three limits. Try the $100,000,000 account: the liquidity cap takes over.';}
+  if(S.stage===5){body=kv([['Recommendation 建議',a.rec.label+' '+a.rec.zh],['Shares 股數',a.rec.shares.toLocaleString('en-US')],['Notional 金額',money(a.rec.notional)],['Stop 停損',a.sizing.stop.toFixed(2)],['Decision owner 決策者','You — the system only recommends']]);why='Record your own decision below. Overrides are allowed and are logged, never hidden.';}
+  $('inspect').innerHTML='<h2>Stage '+(S.stage+1)+': '+s.t+' <span class="zh">'+s.z+'</span></h2>'+body+'<p class="why">'+why+'</p>';
+}
+function renderAttr(a){
+  var MAX=2.5,rows=a.feats.map(function(f){
+    var w=Math.min(Math.abs(f.contrib)/MAX,1)*50,pos=f.contrib>=0;
+    return '<div class="lab">'+f.name+' <span class="zh">'+f.zh+'</span></div><div class="track" role="img" aria-label="'+f.name+' contributes '+sgn(f.contrib)+'"><i style="'+(pos?'left:50%':'right:50%')+';width:'+w+'%;background:'+(pos?'var(--pos)':'var(--neg)')+';border-radius:'+(pos?'0 4px 4px 0':'4px 0 0 4px')+'"></i></div><div class="num" style="text-align:right">'+sgn(f.contrib)+'</div>';}).join('');
+  $('attr').innerHTML='<h2>Model attribution 模型歸因 <span class="zh num">score '+sgn(a.score)+'</span></h2><div class="legend"><span><i class="sw" style="color:var(--pos)"></i>Raises score 加分</span><span><i class="sw" style="color:var(--neg)"></i>Lowers score 扣分</span></div><div class="attr">'+rows+'</div><p class="why">Each bar is weight × z-score, and the bars add up exactly to the score. It describes this model, not what causes prices to move.</p>';
+}
+function renderChecks(a){
+  $('checks').innerHTML='<h2>Risk checks 風險檢查</h2><ul class="checks">'+a.checks.map(function(c){return '<li><span>'+statusBadge(c.status)+'</span><span><b>'+c.name+'</b> <span class="zh">'+c.zh+'</span></span><span></span><span class="d">'+c.text+'</span></li>';}).join('')+'</ul>';
+}
+var LAST=null;
+function renderDecide(a){
+  var r=a.rec,d=S.dec,isBuy=r.label==='BUY';
+  var ovLabel=isBuy?'Override: do not buy 覆寫（不買）':'Override: buy anyway 覆寫（仍買進）';
+  var needShares=d&&((d.type==='modify')||(d.type==='override'&&!isBuy));
+  var needReason=d&&(d.type==='modify'||d.type==='override');
+  $('decide').innerHTML='<h2>Your decision 你的決定 <span class="zh">recorded with the recommendation it responds to</span></h2>'+
+    '<div class="seg" role="group" aria-label="Decision">'+
+    (isBuy?'<button type="button" data-d="accept" aria-pressed="'+(d&&d.type==='accept')+'">Accept 接受</button><button type="button" data-d="modify" aria-pressed="'+(d&&d.type==='modify')+'">Modify size 調整數量</button>':'<button type="button" data-d="accept" aria-pressed="'+(d&&d.type==='accept')+'">Agree, no trade 同意（不交易）</button>')+
+    '<button type="button" data-d="override" aria-pressed="'+(d&&d.type==='override')+'">'+ovLabel+'</button></div>'+
+    (d?'<div class="row">'+
+      (needShares?'<div class="field"><label for="dshares">Shares 股數</label><input id="dshares" type="number" min="0" step="1" value="'+(d.shares!=null?d.shares:(isBuy?r.shares:a.sizing.shares))+'"></div>':'')+
+      (needReason?'<div class="field"><label for="dreason">Reason 原因 (required)</label><select id="dreason"><option value="">Choose a reason</option><option>I have information that is not in the data 我有資料以外的資訊</option><option>My risk tolerance is different 我的風險承受度不同</option><option>I disagree with a signal 我不同意某項訊號</option><option>Other 其他</option></select></div>':'')+
+      '<div class="field" style="flex:0 0 auto"><button type="button" class="primary" id="confirm">Confirm 確認</button></div></div>'+
+      (d.type==='override'?'<p class="foot" id="pausenote" style="margin:8px 0 0">Pause before override 覆寫前暫停: the confirm button unlocks in a few seconds.</p>':''):'<p class="foot" style="margin:10px 0 0">Choose one. The recommendation is not an order.</p>');
+  if(d&&d.type==='override')startPause();
+}
+function startPause(){
+  clearInterval(S.pauseT);var btn=$('confirm');if(!btn)return;var left=5;
+  btn.disabled=true;btn.textContent='Confirm 確認 ('+left+'s)';
+  S.pauseT=setInterval(function(){left--;var b=$('confirm');if(!b){clearInterval(S.pauseT);return;}
+    if(left<=0){clearInterval(S.pauseT);b.disabled=false;b.textContent='Confirm 確認';var n=$('pausenote');if(n)n.textContent='You can confirm now.';}else b.textContent='Confirm 確認 ('+left+'s)';},1000);
+}
+function renderLog(){
+  var ov=S.log.filter(function(x){return x.type==='override';}).length,keys=Object.keys(S.tried).length;
+  $('log').innerHTML='<h2>Decision record 決策記錄 <span class="zh num">'+S.log.length+(S.log.length===1?' decision':' decisions')+' · '+ov+(ov===1?' override':' overrides')+'</span></h2>'+
+    (S.log.length?'<div class="scroll"><table><thead><tr><th>Day</th><th>Scenario</th><th>System said</th><th>You did</th><th class="r">Shares</th><th>Reason</th><th class="r">Prob.</th></tr></thead><tbody>'+S.log.map(function(x){return '<tr><td class="num">'+x.day+'</td><td>'+x.scn+'</td><td>'+x.rec+'</td><td>'+x.did+'</td><td class="r num">'+x.shares.toLocaleString('en-US')+'</td><td>'+(x.reason||'—')+'</td><td class="r num">'+x.prob+'</td></tr>';}).join('')+'</tbody></table></div>':'<p class="why" style="margin:0">No decisions yet. Each one you confirm is listed here with the recommendation it responded to.</p>')+
+    '<p class="foot" style="margin:10px 0 0">Trial log 試驗記錄: you have viewed <b class="num">'+keys+'</b> distinct setting combination'+(keys===1?'':'s')+' (scenario, risk, stop) in this session. When judging any result, count every setting you tried (multiple testing 多重檢定). This record lives in the page only and resets on reload.</p>';
+}
+function render(){
+  var sc=SCENARIOS[S.scn];S.tried[S.scn+'|'+S.riskPct+'|'+S.stopMult]=1;
+  var a=analyze(S.series,S.day,params());LAST=a;
+  $('riskv').textContent=S.riskPct.toFixed(2)+'%';$('stopmv').textContent=S.stopMult.toFixed(1)+'×';$('dayv').textContent=S.day;
+  $('asof').textContent='as of day '+S.day+' · '+sc.name;
+  renderChart(a);renderRec(a);renderPipe();renderInspect(a);renderAttr(a);renderChecks(a);renderDecide(a);renderLog();
+}
+function setStageOnly(i){S.stage=i;var a=LAST;renderPipe();renderInspect(a);}
+function resetDecision(){S.dec=null;clearInterval(S.pauseT);}
+function init(){
+  $('scn').innerHTML=SCENARIOS.map(function(s,i){return '<option value="'+i+'">'+s.name+' '+s.zh+'</option>';}).join('');
+  load();render();
+  $('scn').addEventListener('change',function(e){S.scn=+e.target.value;load();resetDecision();render();});
+  $('acct').addEventListener('change',function(e){S.equity=+e.target.value;resetDecision();render();});
+  $('risk').addEventListener('input',function(e){S.riskPct=+e.target.value;resetDecision();render();});
+  $('stopm').addEventListener('input',function(e){S.stopMult=+e.target.value;resetDecision();render();});
+  $('day').addEventListener('input',function(e){S.day=+e.target.value;resetDecision();render();});
+  $('pipe').addEventListener('click',function(e){var b=e.target.closest('button[data-i]');if(b){clearInterval(S.traceT);setStageOnly(+b.dataset.i);}});
+  $('play').addEventListener('click',function(){
+    var b=$('play');if(S.timer){clearInterval(S.timer);S.timer=null;b.textContent='Play days 播放';return;}
+    b.textContent='Pause 暫停';if(S.day>=251)S.day=60;
+    S.timer=setInterval(function(){if(S.day>=251){clearInterval(S.timer);S.timer=null;b.textContent='Play days 播放';return;}S.day++;$('day').value=S.day;resetDecision();render();},120);});
+  $('trace').addEventListener('click',function(){clearInterval(S.traceT);var i=0;setStageOnly(0);
+    S.traceT=setInterval(function(){i++;if(i>=STAGES.length){clearInterval(S.traceT);return;}setStageOnly(i);},750);});
+  $('decide').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-d]');
+    if(b){S.dec={type:b.dataset.d,shares:null};renderDecide(LAST);return;}
+    if(e.target.id==='confirm'){
+      var a=LAST,d=S.dec,isBuy=a.rec.label==='BUY',reasonEl=$('dreason'),shEl=$('dshares'),reason=reasonEl?reasonEl.value:'';
+      if(reasonEl&&!reason){reasonEl.focus();reasonEl.style.borderColor='var(--fail)';return;}
+      var shares=shEl?Math.max(0,Math.floor(+shEl.value||0)):(d.type==='accept'?a.rec.shares:0);
+      var did={accept:isBuy?'Accepted':'Agreed, no trade',modify:'Modified size',override:isBuy?'Overrode: no buy':'Overrode: bought anyway'}[d.type];
+      if(d.type==='override'&&isBuy)shares=0;
+      S.log.unshift({type:d.type,day:a.t,scn:SCENARIOS[S.scn].name,rec:a.rec.label+(a.rec.shares?' '+a.rec.shares.toLocaleString('en-US'):''),did:did+(a.blocked&&d.type==='override'&&!isBuy?' (risk check failed)':''),shares:shares,reason:reason.split(' ').slice(0,12).join(' '),prob:pct(a.prob,0)});
+      S.dec=null;clearInterval(S.pauseT);renderDecide(a);renderLog();}
+  });
+  var ch=$('chart');
+  function idxFrom(e){var g=ch._geo,svg=ch.querySelector('svg');if(!g||!svg)return null;var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*g.W;return Math.round((x-g.m.l)/(g.W-g.m.l-g.m.r)*(g.n-1));}
+  ch.addEventListener('pointermove',function(e){var g=ch._geo,i=idxFrom(e);if(i==null)return;i=clip(i,0,S.day);
+    var xh=$('xh'),xd=$('xd'),tip=$('tip'),p=S.series[i],svg=ch.querySelector('svg'),r=svg.getBoundingClientRect(),cr=ch.getBoundingClientRect();
+    xh.setAttribute('x1',g.X(i));xh.setAttribute('x2',g.X(i));xh.setAttribute('visibility','visible');xd.setAttribute('cx',g.X(i));xd.setAttribute('cy',g.Y(p));xd.setAttribute('visibility','visible');
+    tip.hidden=false;tip.textContent='day '+i+' · '+p.toFixed(2);tip.style.left=(r.left-cr.left+g.X(i)/g.W*r.width)+'px';tip.style.top=(r.top-cr.top+g.Y(p)/g.H*r.height)+'px';});
+  ch.addEventListener('pointerleave',function(){var xh=$('xh'),xd=$('xd'),tip=$('tip');if(xh)xh.setAttribute('visibility','hidden');if(xd)xd.setAttribute('visibility','hidden');if(tip)tip.hidden=true;});
+  ch.addEventListener('click',function(e){var i=idxFrom(e);if(i==null)return;S.day=clip(i,60,251);$('day').value=S.day;resetDecision();render();});
+}
+if(typeof document!=='undefined'&&document.getElementById('scn'))init();
+</script>
+</body>
+</html>
