@@ -20,9 +20,18 @@ Status values: **Decided** (confirmed by the project owner) or **Proposed** (sug
 | 14 | 2026-10-12 | All data access goes through one module in `src/`, so the storage backend can be swapped | Proposed | Migration path: copy Parquet to cloud storage, load into the target system, run old and new in parallel and compare results, then switch |
 | 15 | 2026-10-12 | Before every merge, check for conflicts in contents and code and report the result | Decided | Stated by owner |
 | 16 | 2026-10-12 | Project name is **TalonQuant** (GitHub repo `EagleHsieh/TalonQuant`, renamed from `Quantitative-Trading-Project`); the README title stays "Quantitative Trading Project" because it summarizes the project at a glance | Decided | Stated by owner. Name is for now and may change. Exact-name checks on PyPI, npm, and GitHub found no conflicts on 2026-10-12; trademark and domain checks not done |
+| 17 | 2026-11-11 | Decisions are rule-based and data-driven; the system recommends and the user makes the final decision | Decided | Stated by owner |
+| 18 | 2026-11-11 | Terminology in documents and replies carries a Mandarin translation (Traditional characters, Taiwan finance usage), kept in docs/GLOSSARY.md | Decided | Stated by owner. Terms marked * have no single standard translation |
+| 19 | 2026-11-11 | Validation stack: walk-forward, purged k-fold with embargo, combinatorial purged cross-validation, Probability of Backtest Overfitting, Deflated Sharpe Ratio; log every trial | Proposed | See docs/METHODS.md; sources M1-M3 |
+| 20 | 2026-11-11 | Three-agent debate protocol (proposer, opponent, judge): at least 5 hypotheses per round, all verdicts archived, statistical tests decide data claims | Proposed | Owner's idea; details proposed. Unproven for trading (M5, M6). See docs/DEBATE.md |
+| 21 | 2026-11-11 | Freshness policy: as-of dates on data and sources, scheduled source checks, stability tests across old and new periods | Proposed | Owner wants newest data and sources considered |
+| 22 | 2026-11-11 | Visualization labels feature contributions as model attribution, never as causation | Proposed | M4 |
+| 23 | 2026-11-11 | HCI principles: pre-commitment display, pause before override, uncertainty ranges, override tracking, no dark patterns; test with users | Proposed | Owner expects HCI to matter later; effectiveness unverified (M7, M8 show behavior effects only) |
 
 ## Open decisions
 - License (none chosen yet; a public repository without a license is not open for reuse by default).
 - Repository visibility (currently public).
 - Data source and budget.
 - Whether Claude may merge pull requests directly in chat. Technically possible with a token that has Contents and Pull requests write access. Proposed rule: only on an explicit instruction naming the pull request, after a conflict check and test run.
+- Whether the AI judge uses a different model family from the proposer and opponent.
+- Whether the debate protocol runs at development time only, or also at runtime.

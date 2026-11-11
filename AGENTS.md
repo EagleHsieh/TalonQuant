@@ -7,6 +7,7 @@ This file is the entry point for any AI agent or contributor joining the project
 2. `docs/STATUS.md` - what is done, in progress, next
 3. `docs/DECISIONS.md` - what was decided and why
 4. `docs/references.md` - the only approved source list
+5. `docs/METHODS.md`, `docs/DEBATE.md`, `docs/GLOSSARY.md` - methods, debate protocol, bilingual terms
 
 ## Non-negotiable rules
 1. **Never fabricate sources.** Do not invent papers, authors, citations, numbers, formulas, or links. If you are not sure, search and verify, then record the source in `docs/references.md`. If you cannot verify, label it "unverified" and say so.
@@ -17,6 +18,8 @@ This file is the entry point for any AI agent or contributor joining the project
 6. **No look-ahead, no survivorship bias, realistic costs.** Any backtest must state how it avoids these.
 7. **No financial advice.** Outputs are research and education only.
 8. **Check for conflicts before every merge.** Check for conflicts in contents and code (GitHub mergeability plus a local test merge), run the tests, and report the result. Merge only on the owner's explicit instruction.
+9. **Add Mandarin next to terminology.** When using a technical term in documents or replies to the owner, add the Mandarin translation (Traditional characters). Keep `docs/GLOSSARY.md` current.
+10. **When unsure, search and report.** Look it up, tell the owner what you found, and list what remains unverified.
 
 ## Branch and PR workflow
 - Branch names: `feature/<topic>`, `fix/<topic>`, `research/<topic>`, `setup/<topic>`.
