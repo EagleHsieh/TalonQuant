@@ -25,7 +25,7 @@ An open, research-grade toolkit for quantitative trading research on **US equiti
 | Institutional | Teams and firms | Cloud deployment, database server, audit logs, access control (later) |
 
 ## Discussion so far（討論紀錄）
-A summary of what the owner and Claude have discussed. Numbers refer to [`docs/DECISIONS.md`](docs/DECISIONS.md), which has the full record and each item's status (Decided 已決定 / Proposed 提議中).
+A summary of what the owner and AI agent have discussed. Numbers refer to [`docs/DECISIONS.md`](docs/DECISIONS.md), which has the full record and each item's status (Decided 已決定 / Proposed 提議中).
 
 - **Scope（範圍）.** US equities. Holding period (持有期間) is a strategy parameter: long-term means held more than one year, per IRS Topic 409. Short- to medium-term strategies on daily data come first (7). Hedge-fund methods (避險基金) are design inspiration; running a fund is deferred (13).
 - **Users（使用者）.** From small individual accounts to institutional teams, through layered tiers (5).
