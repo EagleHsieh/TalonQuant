@@ -29,11 +29,24 @@ Rule: only list sources that were actually opened and checked. Unverified items 
 | M7 | Barber and Odean, "Trading Is Hazardous to Your Wealth", Journal of Finance 55(2), 773-806, 2000. https://econpapers.repec.org/RePEc:bla:jfinan:v:55:y:2000:i:2:p:773-806 ; DOI 10.1111/0022-1082.00226 | Overconfidence can explain high trading and poor performance of individual investors. Figures (66,465 households, 1991-1996; heaviest traders 11.4% vs market 17.9% a year) come from a library-index abstract; confirm in the paper |
 | M8 | Kahneman and Tversky, "Prospect Theory: An Analysis of Decision under Risk", Econometrica 47(2), 1979. https://www.econometricsociety.org/publications/econometrica/1979/03/01/prospect-theory-analysis-decision-under-risk | Value assigned to gains and losses rather than final wealth; value function generally steeper for losses than for gains (abstract read) |
 
+## Candidate research studies (access date 2026-11-12; bibliographic records opened, full papers not read)
+| ID | Source | What it supports |
+|---|---|---|
+| M9 | Bernard and Thomas, "Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?", Journal of Accounting Research 27, 1-36, 1989. https://ideas.repec.org/a/bla/joares/v27y1989ip1-36.html | Bibliographic record confirmed; the record has no abstract (keywords: delayed market reaction, risk premium, incomplete risk adjustment) |
+| M10 | Fama and French, "Common risk factors in the returns on stocks and bonds", Journal of Financial Economics 33(1), 3-56, 1993. https://econpapers.repec.org/RePEc:eee:jfinec:v:33:y:1993:i:1:p:3-56 | Bibliographic record confirmed; no abstract on the record |
+| M11 | Almgren and Chriss, "Optimal execution of portfolio transactions", Journal of Risk. https://ideas.repec.org/a/rsk/journ4/2161150.html | Abstract (paraphrased): trade-off between volatility risk and market impact cost; efficient frontier of liquidation strategies; liquidity-adjusted VaR. Volume, issue, and year are not shown on the record |
+| M12 | DeMiguel, Garlappi, Uppal, "Optimal Versus Naive Diversification: How Inefficient is the 1/N Portfolio Strategy?", Review of Financial Studies 22(5), 1915-1953, 2009. https://ideas.repec.org/a/oup/rfinst/v22y2009i5p1915-1953.html | Across 14 models and 7 datasets, none consistently beat 1/N on Sharpe ratio, certainty-equivalent return, or turnover; estimation error offsets the gains of optimization (abstract read) |
+| M13 | Cont, Kukanov, Stoikov, "The Price Impact of Order Book Events", Journal of Financial Econometrics 12(1), 47-88, 2014. https://ideas.repec.org/a/oup/jfinec/v12y2014i1p47-88..html ; preprint https://arxiv.org/abs/1011.6402 | Using NYSE data for 50 US stocks, short-interval price changes are mainly driven by order flow imbalance, with a roughly linear relation (abstract read) |
+
+The idea list itself came from an Instagram carousel by the Wall Street Quants account (posted October 26). It is marketing for a paid service with simulated charts, so it is a pointer only and not a source for any claim.
+
 ## Known discrepancies to resolve
 - SEC approval date of the FINRA Rule 4210 amendments: some sources say April 14, 2026, one says April 15, 2026. The effective date reported is June 4, 2026. Check the primary SEC order and FINRA Regulatory Notice 26-10.
 - M2: SSRN lists the paper as forthcoming in 2015; the journal issue is vol. 20 no. 4, April 2017. Cite as 2017.
 - M5: sources disagree on whether the venue is ICML 2023 or ICML 2024. Cite the arXiv ID.
 - M8: sources give the page range as 263-292 or 263-291. Confirm.
+- M11: the year and volume are not on the record opened. The slide says 2000/01 and the DOI string seen in search results (10.21314/JOR.2001.041) points to 2001. Confirm on the journal page.
+- M13: one RePEc listing is indexed under 2013; the record opened says 2014. Cite 2014 and confirm.
 
 ## Unverified (do not rely on until checked)
 - Egger et al., "Quantum Computing for Finance: State-of-the-art and future prospects", IEEE Transactions on Quantum Engineering, 2020 - recalled from memory
@@ -50,3 +63,5 @@ Rule: only list sources that were actually opened and checked. Unverified items 
 - Whether multi-agent debate improves trading or investment decisions - no evidence found; M5 and M6 do not test it
 - Whether HCI nudges (pause before override, pre-commitment display) change investor behavior - not studied; test with users
 - Embargo-length guidance - seen only in secondary sources, not in M3 itself
+- Whether post-earnings drift, the Fama-French factors, or the 1/N result still hold in recent US data - not tested; do it with our own out-of-sample tests
+- Abstracts of M9 and M10 were not on the records opened; the post's one-line descriptions of them are unchecked

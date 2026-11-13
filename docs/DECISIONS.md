@@ -28,6 +28,7 @@ Status values: **Decided** (confirmed by the project owner) or **Proposed** (sug
 | 22 | 2026-11-11 | Visualization labels feature contributions as model attribution, never as causation | Proposed | M4 |
 | 23 | 2026-11-11 | HCI principles: pre-commitment display, pause before override, uncertainty ranges, override tracking, no dark patterns; test with users | Proposed | Owner expects HCI to matter later; effectiveness unverified (M7, M8 show behavior effects only) |
 | 24 | 2026-11-11 | Decision-path prototype is a single self-contained HTML file on synthetic data, with its pure logic between `LOGIC:START/END` markers so it can be tested in Node; to be replaced by the Python dashboard (item 9) once real data exists | Proposed | Owner asked to start building the prototype |
+| 25 | 2026-11-12 | Adopt a list of candidate research studies (1/N baseline, post-earnings drift, factor attribution, execution costs; order-flow imbalance later) in `docs/STUDIES.md`, in that order, to exercise the pipeline | Proposed | Owner shared the idea list; papers verified as M9-M13 |
 
 ## Open decisions
 - License (none chosen yet; a public repository without a license is not open for reuse by default).
@@ -36,3 +37,4 @@ Status values: **Decided** (confirmed by the project owner) or **Proposed** (sug
 - Whether Claude may merge pull requests directly in chat. Technically possible with a token that has Contents and Pull requests write access. Proposed rule: only on an explicit instruction naming the pull request, after a conflict check and test run.
 - Whether the AI judge uses a different model family from the proposer and opponent.
 - Whether the debate protocol runs at development time only, or also at runtime.
+- Earnings data source (announcement timestamps and estimates) and fundamentals source for factor construction.
