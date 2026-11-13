@@ -60,3 +60,14 @@ Names such as Parquet, DuckDB, and SHAP stay in English.
 | repository / branch | 儲存庫 / 分支 |
 | pull request / merge / conflict | 合併請求（PR）/ 合併 / 衝突 |
 | token | 權杖 |
+| post-earnings-announcement drift | 財報公布後漂移 |
+| earnings surprise | 盈餘驚奇（盈餘意外） |
+| factor model | 因子模型 |
+| alpha | 超額報酬（阿爾法） |
+| market impact | 市場衝擊 |
+| optimal execution | 最佳執行 |
+| order-flow imbalance * | 委託流不平衡（訂單流失衡） |
+| equal weight (1/N) | 等權重 |
+| mean-variance optimization * | 均異數最適化（平均數-變異數最適化） |
+| estimation error | 估計誤差 |
+| return attribution | 報酬歸因 |

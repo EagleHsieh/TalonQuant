@@ -8,6 +8,7 @@ This file is the entry point for any AI agent or contributor joining the project
 3. `docs/DECISIONS.md` - what was decided and why
 4. `docs/references.md` - the only approved source list
 5. `docs/METHODS.md`, `docs/DEBATE.md`, `docs/GLOSSARY.md` - methods, debate protocol, bilingual terms
+6. `docs/STUDIES.md` - candidate research studies and their order
 
 ## Non-negotiable rules
 1. **Never fabricate sources.** Do not invent papers, authors, citations, numbers, formulas, or links. If you are not sure, search and verify, then record the source in `docs/references.md`. If you cannot verify, label it "unverified" and say so.

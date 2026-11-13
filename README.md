@@ -36,6 +36,7 @@ A summary of what the owner and AI agent have discussed. Numbers refer to [`docs
 - **Freshness（時效性）.** As-of dates on data and sources, scheduled source checks, and stability tests across old and new periods (21).
 - **Human-computer interaction（人機互動）.** Pre-commitment display, a pause before override, uncertainty ranges, override tracking, and no dark patterns (23). Whether these change behavior is untested and needs user testing.
 - **Visualization（視覺化）.** Interactive decision-path (決策路徑) view that shows how data becomes a recommendation. Planned first as a prototype on clearly labeled synthetic data (合成資料).
+- **Candidate studies（候選研究專題）.** Five small studies built on published papers, in order: 1/N baseline, post-earnings drift, factor attribution, execution costs, and order-flow imbalance later (25). Details in [`docs/STUDIES.md`](docs/STUDIES.md).
 - **Working method（工作方式）.** `main` plus topic branches merged through pull requests (2); conflict check in contents and code before every merge (15); Mandarin next to terminology (18); multiple agents in parallel (6); handoff documents for any AI agent (3).
 - **Rejected or deferred（暫不採用）.** Quantum computing is an optional research module only, benchmarked against classical baselines (11). Cloud deployment comes later, with Docker from the start (12).
 
@@ -45,8 +46,10 @@ A summary of what the owner and AI agent have discussed. Numbers refer to [`docs
 | 2026-10-12 | Repository created; skeleton, handoff documents, and storage decision (PR #1, #2) |
 | 2026-10-12 | Renamed to TalonQuant (PR #3) |
 | 2026-11-11 | Methods, debate protocol, and bilingual glossary added (PR #4) |
-| 2026-11-11 | This README updated with the discussion summary and sources |
-| Next | Synthetic-data prototype of the decision-path visualization |
+| 2026-11-11 | README updated with the discussion summary and sources (PR #5) |
+| 2026-11-12 | Decision-path prototype on synthetic data (PR #6) |
+| 2026-11-12 | Candidate research studies and verified sources added (this update) |
+| Next | Owner review of the prototype interface; data source decision |
 
 ## Sources used（參考來源）
 Only sources that were opened and checked are listed. The full table, with what each source supports, is in [`docs/references.md`](docs/references.md).
@@ -73,6 +76,13 @@ Only sources that were opened and checked are listed. The full table, with what 
 - M6 Irving, Christiano, Amodei, AI safety via debate: https://arxiv.org/abs/1805.00899
 - M7 Barber and Odean, 2000: https://econpapers.repec.org/RePEc:bla:jfinan:v:55:y:2000:i:2:p:773-806
 - M8 Kahneman and Tversky, Prospect Theory, 1979: https://www.econometricsociety.org/publications/econometrica/1979/03/01/prospect-theory-analysis-decision-under-risk
+
+**Candidate studies（候選研究專題）**
+- M9 Bernard and Thomas, post-earnings drift, 1989: https://ideas.repec.org/a/bla/joares/v27y1989ip1-36.html
+- M10 Fama and French, common risk factors, 1993: https://econpapers.repec.org/RePEc:eee:jfinec:v:33:y:1993:i:1:p:3-56
+- M11 Almgren and Chriss, optimal execution: https://ideas.repec.org/a/rsk/journ4/2161150.html
+- M12 DeMiguel, Garlappi, Uppal, 1/N portfolio, 2009: https://ideas.repec.org/a/oup/rfinst/v22y2009i5p1915-1953.html
+- M13 Cont, Kukanov, Stoikov, order book events, 2014: https://ideas.repec.org/a/oup/jfinec/v12y2014i1p47-88..html
 
 **Known discrepancies and unverified items（待查證項目）.** Some details are still open, for example the SEC approval date of the FINRA change, the publication year and venue of M2 and M5, and the Taiwan result attributed to Barber, Lee, Liu, and Odean. Several claims are unverified and must not be relied on until checked, including the Egger et al. quantum computing paper, the qualified purchaser threshold, Perspective's license, and whether debate or HCI nudges improve trading outcomes. See the last two sections of [`docs/references.md`](docs/references.md).
 
